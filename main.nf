@@ -328,7 +328,8 @@ process arriba{
         --outSAMunmapped Within \\
         --outBAMcompression 0 \\
         --outFilterMultimapNmax 200 \\ 
-		--peOverlapNbasesMin 10 \\ --alignSplicedMateMapLminOverLmate 0.5 \\
+		--peOverlapNbasesMin 10 \\ 
+		--alignSplicedMateMapLminOverLmate 0.5 \\
 		--alignSJstitchMismatchNmax 5 -1 5 5 \\
         --chimSegmentMin 10 \\
         --chimOutType WithinBAM HardClip \\
@@ -347,6 +348,7 @@ process arriba{
         -O ${prefix}fusions.discarded.tsv \\
         -b ${params.blacklist} \\
         -k ${params.knownfusions}  \\
+		-t ${params.knownfusions}  \\
         -p ${params.proteinDomains}
 	
 	cat ${prefix}fusions.tsv ${prefix}fusions.discarded.tsv > ${smpl_id}.combined.tsv

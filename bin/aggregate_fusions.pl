@@ -146,13 +146,19 @@ sub read_arriba {
 	$fusion_info{breakpoint2} = $fus->{'breakpoint2'}; 
 	my $read1 =  $fus->{'split_reads1'};
 	my $read2 = $fus->{'split_reads2'};
+	my @desArray = ($fus->{'confidence'},$fus->{'tags'});
+
+	if ($fus->{'tags'} =~ /\./)  {
+		pop @desArray;
+	}
 
 	# Get spanning reads and pairs
-	$fusion_info{spanreads} = $read1 + $read2;
-	$fusion_info{spanpairs} = 0;
-    $fusion_info{longestanchor} = ( $read1 + $read2 > 25 ? ">25" : "<25" );
+	$fusion_info{spanreads} = $read1 + $read2 ;
+	$fusion_info{spanpairs} = $fus->{'discordant_mates'};
+    $fusion_info{splitread1} = $fus->{'split_reads1'};
+	$fusion_info{splitread2} =  $fus->{'split_reads2'};
 	
-	$fusion_info{desc} = $fus->{'confidence'};
+	$fusion_info{desc} = join(",",@desArray);
 	$fusion_info{effect} = $fus->{'reading_frame'};
 	
 	$fusion_info{caller} = 'arriba';
