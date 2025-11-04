@@ -1,0 +1,39 @@
+process REALIGN_BWA {
+
+    tag "$sampleId"
+    label 'process_medium'
+
+input:
+    path fasta
+    tuple val(sample), val(lims_id), val(pool_id) 
+    tuple val(sampleId), path (read1), path(read2), path(ighDux4reads)
+    
+
+output: 
+    tuple val(sampleId), path ("${lims_id}_IGHDUX4_RNAbwa_n200_hg38.bam"), path("${lims_id}_IGHDUX4_RNAbwa_n200_hg38.bam.bai")
+
+script:
+
+"""
+zcat ${read1} | grep -F -A3 -f ${ighDux4reads} --no-group-separator \
+| gzip -c > ${lims_id}_R1_001_ID_n200_grch38.fastq.gz &
+zcat ${read2} | grep -F -A3 -f ${ighDux4reads} --no-group-separator \
+| gzip -c > ${lims_id}_R2_001_ID_n200_grch38.fastq.gz &
+wait
+
+INDEX=`find -L ./ -name "GCA_000001405.15_GRCh38_no_alt_analysis_set_nochr.fna*.amb" | sed 's/.amb//'`
+
+bwa mem -M -R "@RG\\tID:IGHDUXreads_${lims_id}\\tSM:${lims_id}" \\
+    -t ${task.cpus} \\
+    \${INDEX} \\
+    ${lims_id}_R1_001_ID_n200_grch38.fastq.gz \\
+    ${lims_id}_R2_001_ID_n200_grch38.fastq.gz \\
+    2> bwa.log | samblaster 2> samblaster.log | samtools sort \\
+    -@ 4  \\
+    -m 20G \\
+    -T bwa_dedup_temp \\
+    -o ${lims_id}_IGHDUX4_RNAbwa_n200_hg38.bam -O bam -
+
+samtools index ${lims_id}_IGHDUX4_RNAbwa_n200_hg38.bam
+"""
+}

@@ -13,8 +13,7 @@ GetOptions( \%opt,
 			'starfusion=s', 
 			'fuseq=s', 
 			'jaffa=s',
-            'arriba=s',
-			'exonskip=s',  
+            'arriba=s', 
 			'priority=s' );
 
 die "--priority must be given" unless $opt{priority};
@@ -26,14 +25,11 @@ my %blacklist = read_blacklist("/data/bnf/ref/fusion_blacklist");
 
 # Read the fusion caller output files
 my %aggregated;
-
-
 read_fusioncatcher( $opt{fusioncatcher}, \%aggregated ) if $opt{fusioncatcher};
 read_starfusion( $opt{starfusion}, \%aggregated ) if $opt{starfusion};
 read_arriba( $opt{arriba}, \%aggregated ) if $opt{arriba};
 read_fuseq( $opt{fuseq}, \%aggregated ) if $opt{fuseq};
 read_jaffa( $opt{jaffa}, \%aggregated ) if $opt{jaffa};
-read_exonskip( $opt{exonskip}, \%aggregated ) if ( $opt{exonskip} && lines_file($opt{exonskip}) > 1) ;
 
 # Select one representative "best" call for the fusion.
 foreach my $genes (keys %aggregated ) {
@@ -267,48 +263,4 @@ sub read_jaffa {
 	$fusion_info{caller} = 'jaffa';
 	push @{$agg->{$genes}}, \%fusion_info;
     }
-}
-
-
-sub read_exonskip {
-
-	my $fn = shift;
-    my $agg = shift;
-
-    my @EXONSKIP = read_tsv($fn);
-    
-    foreach my $fus ( @EXONSKIP ) {
-		# Get gene symbol pair
-		my $gene1 = $fus->{'start_exon'};
-		my $gene2 = $fus->{'end_exon'};
-		my $genes = noversion($gene1)."^".noversion($gene2);
-		my %fusion_info;
-
-		$fus->{left_break} =~ s/chr//;
-		$fus->{right_break} =~ s/chr//;
-
-		$fusion_info{breakpoint1} = $fus->{left_break};
-		$fusion_info{breakpoint2} = $fus->{right_break}; 
-		
-		$fusion_info{spanreads} = $fus->{'supporting_reads'};
-		$fusion_info{spanpairs} = 0; ## this needs to be fixed
-		$fusion_info{effect} = $fus->{'effect'};
-		$fusion_info{desc} = $fus->{'confidence'};
-
-		$fusion_info{caller} = 'exonskip';
-		
-		unless( $fusion_info{desc} =~ /banned/ ) {
-	    	push @{$agg->{$genes}}, \%fusion_info;
-		}
-	}
-}
-
-sub lines_file {
-	# source : https://www.oreilly.com/library/view/perl-cookbook/1565922433/ch08s03.html
-
-	my $file = shift;
-	my $count = `wc -l < $file`;
-	die "wc failed: $?" if $?;
-	chomp($count);
-	return ($count)
 }

@@ -14,8 +14,8 @@ sub read_tsv {
     my $outfmt = "array";
     my $key;
     if( $_[1] and $_[1] ne "_ARRAY" ) {
-	$key = $_[1];
-	$outfmt = "hash";
+		$key = $_[1];
+		$outfmt = "hash";
     }
 
     my $lenient = 0;

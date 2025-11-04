@@ -1,0 +1,34 @@
+include { AGGREGATE_FUSION_STD_CUSTOM } from '../../../modules/aggregatefusion/agg_std_cus.nf'
+
+include { AGGREGATE_FUSION_STD } from '../../../modules/aggregatefusion/agg_std.nf'
+
+workflow aggFusionWorkflow {
+    take:
+        fusionCatcher
+        arribaFusion
+        starFusion
+        exonskip
+
+    main:
+        // Run the COUNT_LINES process
+        line_count = exonskip.last().countlines()
+
+        // Channels for conditional process outputs
+        def std_custom_out = Channel.empty()
+        def std_out = Channel.empty()
+
+        // Conditional execution and channel assignment
+        line_count.view { count ->
+            if (count.toInteger() > 1) {
+                std_custom_out = AGGREGATE_FUSION_STD_CUSTOM(fusionCatcher, arribaFusion, starFusion, exonskip)
+            } else {
+                std_out = AGGREGATE_FUSION_STD(fusionCatcher, arribaFusion, starFusion)
+            }
+        }
+
+        // Merge the outputs into a single channel
+        aggregate = std_custom_out.mix(std_out)
+
+    emit:
+        aggregate
+}
