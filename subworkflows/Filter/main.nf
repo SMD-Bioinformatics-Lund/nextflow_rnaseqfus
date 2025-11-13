@@ -7,6 +7,7 @@ workflow filterFusionWorkflow {
 
     main:
         ch_versions = Channel.empty()
+        // if params.wts == false -> go for the filtering else go for the marking the fusions
         FILTER_FUSION( aggFusionCalls, stGenelist )  
         ch_versions = ch_versions.mix(FILTER_FUSION.out.versions)
     

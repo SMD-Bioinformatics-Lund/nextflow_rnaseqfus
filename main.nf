@@ -16,7 +16,10 @@ Solid tumor panel RNA fusion analysis pipeline
 outdir                  :       $params.outdir
 subdir                  :       $params.subdir
 crondir                 :       $params.crondir
-csv                     :       $params.csv
+csv                     :       $params.csv                
+profile                 :       $params.profile
+ighstatus               :       $params.customDuxIgh
+exon_skipping           :       $params.exon_skipping 
 =====================================================================
 """
 
@@ -26,7 +29,9 @@ include { fusionCatcherWorkflow } from './subworkflows/FusCall/fusionCatcher/mai
 include { starFusionWorkflow } from './subworkflows/FusCall/starFusion/main.nf'
 include { arribaWorkflow } from './subworkflows/FusCall/arriba/main.nf'
 include { metEgfrWorkflow } from './subworkflows/MetEgfr/main.nf'
-include { aggFusionWorkflow } from './subworkflows/Aggregate/main.nf'
+include { ighDux4Workflow } from './subworkflows/IghDux4/main.nf'
+include { aggFusionWorkflow_PANEL } from './subworkflows/Aggregate/main.nf'
+include { aggFusionWorkflow_WTS } from './subworkflows/Aggregate/main.nf'
 include { filterFusionWorkflow } from './subworkflows/Filter/main.nf'
 include { qcWorkflow } from './subworkflows/AlignQC/main.nf'
 include { cdmWorkflow } from './subworkflows/CDM/main.nf'
@@ -36,7 +41,7 @@ include { CUSTOM_DUMPSOFTWAREVERSIONS } from './modules/custom/dumpsoftwareversi
 Channel
     .fromPath(params.csv)
     .splitCsv(header:true)
-    .map{ row-> tuple(row.id, file(row.read1), file(row.read2)) }
+    .map{ row -> tuple(row.id, file(row.read1), file(row.read2)) }
     .set { sampleInfo }
 
 Channel
@@ -48,7 +53,7 @@ Channel
 Channel
     .fromPath(params.csv)
     .splitCsv(header:true)
-    .map{ row-> tuple( row.id, row.read1, row.read2, row.clarity_sample_id, row.clarity_pool_id ) }
+    .map{ row -> tuple( row.id, row.read1, row.read2, row.clarity_sample_id, row.clarity_pool_id ) }
     .set { ch_cdm }
 
 ch_outdir = Channel.fromPath(params.outdir)
@@ -77,6 +82,8 @@ refBedXY =  params.ref_bedXY
 metEgfrBed = params.metEgfr
 stGenePanel = params.stgenePanel_file
 
+ighDux4bed = params.ighdux4 
+
  workflow {
     ch_versions = Channel.empty()
 
@@ -92,18 +99,32 @@ stGenePanel = params.stgenePanel_file
     arribaWorkflow( refStar, ch_subsample.subSample, fastaHuman, gtfGencode, blacklistArriba,  knownfusionsArriba, proteinDomainArriba, cytobandArriba ).set{ ch_arriba }
     ch_versions = ch_versions.mix(ch_arriba.versions)
 
-    metEgfrWorkflow ( metEgfrBed, ch_arriba.metrices ).set{ ch_metEgfr }
-    ch_versions = ch_versions.mix(ch_metEgfr.versions)
 
-    aggFusionWorkflow ( ch_fusioncatcher.fusion,   
+    if (params.exon_skipping) {
+        metEgfrWorkflow ( metEgfrBed, ch_arriba.metrices ).set{ ch_metEgfr }
+        ch_versions = ch_versions.mix(ch_metEgfr.versions)
+        aggFusionWorkflow_PANEL ( ch_fusioncatcher.fusion,   
                         ch_arriba.fusion,
                         ch_starfusion.fusion,
-                        ch_metEgfr.fusion).set {    ch_fusionsAll }
-    ch_versions = ch_versions.mix(ch_fusionsAll.versions)
-
-    filterFusionWorkflow (  ch_fusionsAll.aggregate, 
+                        ch_metEgfr.fusion).set {  ch_fusionsAll }
+        ch_versions = ch_versions.mix(ch_fusionsAll.versions)
+        filterFusionWorkflow (  ch_fusionsAll.aggregate, 
                             stGenePanel ).set { ch_fusionsFinal }
-    ch_versions = ch_versions.mix(ch_fusionsFinal.versions)
+        ch_versions = ch_versions.mix(ch_fusionsFinal.versions)
+
+    } else if (params.customDuxIgh) {
+            ighDux4Workflow ( refStar, ch_subsample.subSample, ighDux4bed, fastaIndexFile,  metaCoyote ).set{ ch_metEgfr }
+            ch_versions = ch_versions.mix(ch_metEgfr.versions)
+            aggFusionWorkflow_WTS ( ch_fusioncatcher.fusion,   
+                        ch_arriba.fusion,
+                        ch_starfusion.fusion).set {  ch_fusionsAll }
+            ch_versions = ch_versions.mix(ch_fusionsAll.versions)
+            // filterFusionWorkflow (  ch_fusionsAll.aggregate, 
+    //                         stGenePanel ).set { ch_fusionsFinal }
+    // ch_versions = ch_versions.mix(ch_fusionsFinal.versions)
+
+    }
+
 
     qcWorkflow ( ch_subsample.subSample, 
                  bedRefRseqc,
@@ -116,7 +137,8 @@ stGenePanel = params.stgenePanel_file
     ch_cdm_input = ch_cdm.join(ch_qc.QC)
     cdmWorkflow (ch_cdm_input, ch_outdir)
 
-    coyoteWorkflow (    ch_fusionsFinal.filtered,
+    ch_coyote_fusion = params.exon_skipping ? ch_fusionsFinal.filtered : ch_fusionsAll.aggregate
+    coyoteWorkflow (    ch_coyote_fusion,
                         ch_qc.QC,
                         metaCoyote,
                         ch_outdir )
