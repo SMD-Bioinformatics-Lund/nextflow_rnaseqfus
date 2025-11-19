@@ -1,6 +1,6 @@
 process SALMON {
     tag "${smpl_id}"
-    label "process_low"
+    label "process_medium"
 
     input:
         tuple val(smpl_id), path(read1), path(read2)
@@ -15,16 +15,10 @@ process SALMON {
     script:
         def args = task.ext.args ?: ''
         """
-        TMPDIR="salmon_tmp"
+        salmon quant --threads ${task.cpus} ${args} -1 ${read1} -2 ${read2} --validateMappings -o ./${smpl_id}
 
-        mkdir -p \$TMPDIR
-
-        salmon quant --threads ${task.cpus} \\
-            ${args} ${read1} -2 ${read2} \\
-            --validateMappings -o \$TMPDIR
-
-        cp \$TMPDIR/libParams/flenDist.txt ${smpl_id}.flenDist.txt
-        cp \$TMPDIR/quant.sf ${smpl_id}.quant.sf
+        cp ./${smpl_id}/libParams/flenDist.txt ${smpl_id}.flenDist.txt
+        cp ./${smpl_id}/quant.sf ${smpl_id}.quant.sf
 
         cat <<-END_VERSIONS > versions.yml
         "${task.process}":

@@ -11,7 +11,7 @@
 nextflow.enable.dsl = 2
 log.info """\
 ======================================================================
-Solid tumor panel RNA fusion analysis pipeline
+RNA fusion analysis pipeline
 ======================================================================
 outdir                  :       $params.outdir
 subdir                  :       $params.subdir
