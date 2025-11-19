@@ -1,49 +1,46 @@
 process SALMON {
     tag "${smpl_id}"
-    publishDir "${params.outdir}/quant", mode: 'copy'
-
-    cpus 8
-    memory 24.GB
-    errorStrategy 'ignore'
+    label "process_low"
 
     input:
         tuple val(smpl_id), path(read1), path(read2)
 
     output:
-        tuple val(smpl_id), path("${smpl_id}.quant.sf")
-        tuple val(smpl_id), path("${smpl_id}.flenDist.txt")
-        path("versions.yml")
+        tuple val(smpl_id), path("${smpl_id}.quant.sf"), emit: quant
+        path("versions.yml"), emit: versions
 
-    when:
-        params.quant
-	
-	script:
-    """
-    salmon quant --threads ${task.cpus} \
-        -i ${params.salmon_index_dir} \
-        -l A -1 ${read1} -2 ${read2} \
-        --validateMappings -o .
+   when:
+        task.ext.when == null || task.ext.when
 
-    mv ./libParams/flenDist.txt ${smpl_id}.flenDist.txt
-    mv quant.sf ${smpl_id}.quant.sf
+    script:
+        def args = task.ext.args ?: ''
+        """
+        TMPDIR="salmon_tmp"
 
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        salmon: "$( salmon --version | sed 's/salmon //')"
-        perl: "$( echo $(perl -v 2>&1) | sed 's/.*(v//; s/).*//' )"
-    END_VERSIONS
-    """
+        mkdir -p \$TMPDIR
+
+        salmon quant --threads ${task.cpus} \\
+            ${args} ${read1} -2 ${read2} \\
+            --validateMappings -o \$TMPDIR
+
+        cp \$TMPDIR/libParams/flenDist.txt ${smpl_id}.flenDist.txt
+        cp \$TMPDIR/quant.sf ${smpl_id}.quant.sf
+
+        cat <<-END_VERSIONS > versions.yml
+        "${task.process}":
+            salmon: \$(salmon --version | sed 's/salmon //')
+        END_VERSIONS
+        """
 
     stub:
-    """
-    touch ${smpl_id}.quant.sf
-    touch ${smpl_id}.flenDist.txt
+        """
+        touch ${smpl_id}.quant.sf
+        touch ${smpl_id}.flenDist.txt
+        echo "Parameters : ${task.ext.args ?: ''}" > parameters.txt
 
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        salmon: "stub_version"
-        perl: "\$( echo \$(perl -v 2>&1) | sed 's/.*(v//; s/).*//' )"
-    END_VERSIONS
-    """
-    
+        cat <<-END_VERSIONS > versions.yml
+        "${task.process}":
+            salmon: \$(salmon --version | sed 's/salmon //')
+        END_VERSIONS
+        """
 }

@@ -1,49 +1,51 @@
-process EXTRACT_EXPRESSION {
-
-    publishDir "${params.outdir}/finalResults", mode: 'copy'
-    errorStrategy 'ignore'
-
+process EXPRS_CLASS {
+    tag "${smpl_id}"
+    label "process_low"
+    
     input:
         tuple val(smpl_id), path(quants)
-
+    
     output:
-        tuple val(smpl_id), path("${smpl_id}.salmon.expr")
-        tuple val(smpl_id), path("${smpl_id}.expr.classified")
-        path("versions.yml")
+        tuple val(smpl_id), path("*.salmon.expr"), emit: goi_quant
+        tuple val(smpl_id), path("*.expr.classified"), emit: exprs_class
+        path("versions.yml"), emit: versions
+    
+   when:
+        task.ext.when == null || task.ext.when
 
-	script:
-    """
-    extract_expression_fusion_ny.R \
-        ${params.genesOfIntrest} \
-        ${quants} \
-        ${params.reference_expression_all} \
-        ${smpl_id}.salmon.expr
+    script:
+        def args = task.ext.args ?: ''
+        def args2 = task.ext.args2 ?: ''
+        def args3 = task.ext.args3 ?: ''
 
-    fusion_classifier_report_ny.R \
-        ${smpl_id} \
-        ${quants} \
-        ${params.hem_classifier_salmon} \
-        ${params.ensembl_annotation} \
-        ${smpl_id}.expr.classified
+        """
+        extract_expression_fusion_ny.R \\
+            ${args} \\
+            ${quants} \\
+            ${args2} \\
+            ${smpl_id}.salmon.expr
 
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        extract_expression_fusion_ny: "$( extract_expression_fusion_ny.R --version 2>/dev/null || echo unknown )"
-        fusion_classifier_report_ny: "$( fusion_classifier_report_ny.R --version 2>/dev/null || echo unknown )"
-        perl: "$( echo $(perl -v 2>&1) | sed 's/.*(v//; s/).*//' )"
-    END_VERSIONS
-    """
+        fusion_classifier_report_ny.R \
+            ${smpl_id} \\
+            ${quants} \\
+            ${args3} \\
+            ${smpl_id}.expr.classified
+
+        cat <<-END_VERSIONS > versions.yml
+        "${task.process}":
+            R_version: \$(R --version | grep "R version" | cut -d' ' -f 3)
+        END_VERSIONS
+        """
 
     stub:
-    """
-    touch ${smpl_id}.salmon.expr
-    touch ${smpl_id}.expr.classified
+        """
+        touch ${smpl_id}.salmon.expr
+        touch ${smpl_id}.expr.classified
+        echo "Parameters: ${task.ext.args ?: ''} ${task.ext.args2 ?: ''} ${task.ext.args3 ?: ''}" > parameters.txt
 
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        extract_expression_fusion_ny: "stub_version"
-        fusion_classifier_report_ny: "stub_version"
-        perl: "\$( echo \$(perl -v 2>&1) | sed 's/.*(v//; s/).*//' )"
-    END_VERSIONS
-    """ 
+        cat <<-END_VERSIONS > versions.yml
+        "${task.process}":
+            R_version: \$(R --version | grep "R version" | cut -d' ' -f 3)
+        END_VERSIONS
+        """
 }

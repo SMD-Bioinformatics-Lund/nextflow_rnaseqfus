@@ -17,7 +17,6 @@ outdir                  :       $params.outdir
 subdir                  :       $params.subdir
 crondir                 :       $params.crondir
 csv                     :       $params.csv                
-profile                 :       $params.profile
 ighstatus               :       $params.customDuxIgh
 exon_skipping           :       $params.exon_skipping 
 =====================================================================
@@ -32,6 +31,7 @@ include { metEgfrWorkflow } from './subworkflows/MetEgfr/main.nf'
 include { ighDux4Workflow } from './subworkflows/IghDux4/main.nf'
 include { aggFusionWorkflow_PANEL } from './subworkflows/Aggregate/main.nf'
 include { aggFusionWorkflow_WTS } from './subworkflows/Aggregate/main.nf'
+include { quantWorkflow } from './subworkflows/Quant/main.nf'
 include { filterFusionWorkflow } from './subworkflows/Filter/main.nf'
 include { qcWorkflow } from './subworkflows/AlignQC/main.nf'
 include { cdmWorkflow } from './subworkflows/CDM/main.nf'
@@ -82,7 +82,9 @@ refBedXY =  params.ref_bedXY
 metEgfrBed = params.metEgfr
 stGenePanel = params.stgenePanel_file
 
-ighDux4bed = params.ighdux4 
+ighDux4bed = params.ighdux4
+
+
 
  workflow {
     ch_versions = Channel.empty()
@@ -113,18 +115,15 @@ ighDux4bed = params.ighdux4
         ch_versions = ch_versions.mix(ch_fusionsFinal.versions)
 
     } else if (params.customDuxIgh) {
-            ighDux4Workflow ( refStar, ch_subsample.subSample, ighDux4bed, fastaIndexFile,  metaCoyote ).set{ ch_metEgfr }
-            ch_versions = ch_versions.mix(ch_metEgfr.versions)
-            aggFusionWorkflow_WTS ( ch_fusioncatcher.fusion,   
-                        ch_arriba.fusion,
-                        ch_starfusion.fusion).set {  ch_fusionsAll }
-            ch_versions = ch_versions.mix(ch_fusionsAll.versions)
-            // filterFusionWorkflow (  ch_fusionsAll.aggregate, 
-    //                         stGenePanel ).set { ch_fusionsFinal }
-    // ch_versions = ch_versions.mix(ch_fusionsFinal.versions)
-
+        ighDux4Workflow ( refStar, ch_subsample.subSample, ighDux4bed, fastaIndexFile,  metaCoyote ).set{ ch_metEgfr }
+        ch_versions = ch_versions.mix(ch_metEgfr.versions)
+        aggFusionWorkflow_WTS ( ch_fusioncatcher.fusion,   
+                    ch_arriba.fusion,
+                    ch_starfusion.fusion).set {  ch_fusionsAll }
+        ch_versions = ch_versions.mix(ch_fusionsAll.versions)
+        quantWorkflow ( ch_subsample.subSample ).set { ch_quant }
+        ch_versions = ch_versions.mix(ch_quant.versions)
     }
-
 
     qcWorkflow ( ch_subsample.subSample, 
                  bedRefRseqc,
