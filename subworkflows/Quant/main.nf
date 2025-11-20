@@ -17,6 +17,7 @@ workflow quantWorkflow {
 
 
     emit:
+        flenDist        = SALMON.out.flenDist
         expr            = EXPRS_CLASS.out.goi_quant
         cls             = EXPRS_CLASS.out.exprs_class
 		versions        = ch_versions

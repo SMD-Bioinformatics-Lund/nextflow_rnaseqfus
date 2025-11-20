@@ -7,6 +7,7 @@ process SALMON {
 
     output:
         tuple val(smpl_id), path("${smpl_id}.quant.sf"), emit: quant
+        tuple val(smpl_id), path("${smpl_id}.flenDist.txt"), emit: flenDist
         path("versions.yml"), emit: versions
 
    when:

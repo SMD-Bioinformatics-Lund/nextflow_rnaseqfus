@@ -22,6 +22,7 @@ workflow qcWorkflow {
         ref_bed
         ref_bedXY
         starmetrices
+        flendist
 
     main:
         // def input = readNumber.combine(sampleInfo)
@@ -64,13 +65,20 @@ workflow qcWorkflow {
                               DEEPTOOLS.out.fragment_size)
             ch_versions = ch_versions.mix(QCEXTRACT_GMSV5.out.versions) 
                 
-        } else {
+        } else if ( params.cdm == "twistrnafusionv1-0")  {
             QCEXTRACT ( starmetrices,
                     PROVIDER.out.genotypes,
                     GENEBODY.out.gene_body_coverage, 
                     INNER_DISTANCE.out.insertStatsRseqc)
             ch_versions = ch_versions.mix(QCEXTRACT.out.versions) 
             
+        } else {
+            QCEXTRACT ( starmetrices,
+            PROVIDER.out.genotypes,
+            GENEBODY.out.gene_body_coverage, 
+            flendist)
+            ch_versions = ch_versions.mix(QCEXTRACT.out.versions)
+
         }
     emit:
         QC = (params.cdm == 'solidRNA_GMSv5') ? QCEXTRACT_GMSV5.out.rnaseq_qc : QCEXTRACT.out.rnaseq_qc

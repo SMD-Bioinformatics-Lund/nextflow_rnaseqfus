@@ -19,6 +19,8 @@ crondir                 :       $params.crondir
 csv                     :       $params.csv                
 ighstatus               :       $params.customDuxIgh
 exon_skipping           :       $params.exon_skipping 
+assay_cdm               :       $params.cdm 
+coyote_group            :       $params.coyote_group
 =====================================================================
 """
 
@@ -101,7 +103,7 @@ ighDux4bed = params.ighdux4
     arribaWorkflow( refStar, ch_subsample.subSample, fastaHuman, gtfGencode, blacklistArriba,  knownfusionsArriba, proteinDomainArriba, cytobandArriba ).set{ ch_arriba }
     ch_versions = ch_versions.mix(ch_arriba.versions)
 
-
+    ch_flendist = Channel.empty()
     if (params.exon_skipping) {
         metEgfrWorkflow ( metEgfrBed, ch_arriba.metrices ).set{ ch_metEgfr }
         ch_versions = ch_versions.mix(ch_metEgfr.versions)
@@ -113,7 +115,11 @@ ighDux4bed = params.ighdux4
         filterFusionWorkflow (  ch_fusionsAll.aggregate, 
                             stGenePanel ).set { ch_fusionsFinal }
         ch_versions = ch_versions.mix(ch_fusionsFinal.versions)
+        ch_flendist = Channel.of(
+        tuple( "NO_FLENDIST", file("$projectDir/assets/empty.flenDist.txt") )
+    )
 
+ 
     } else if (params.customDuxIgh) {
         ighDux4Workflow ( refStar, ch_subsample.subSample, ighDux4bed, fastaIndexFile,  metaCoyote ).set{ ch_metEgfr }
         ch_versions = ch_versions.mix(ch_metEgfr.versions)
@@ -123,6 +129,7 @@ ighDux4bed = params.ighdux4
         ch_versions = ch_versions.mix(ch_fusionsAll.versions)
         quantWorkflow ( ch_subsample.subSample ).set { ch_quant }
         ch_versions = ch_versions.mix(ch_quant.versions)
+        ch_flendist = ch_quant.flenDist
     }
 
     qcWorkflow ( ch_subsample.subSample, 
@@ -130,7 +137,8 @@ ighDux4bed = params.ighdux4
                  hg38,
                  refBed,
                  refBedXY,
-                 ch_arriba.metrices ).set{ ch_qc }
+                 ch_arriba.metrices,
+                ch_flendist ).set{ ch_qc }
     ch_versions = ch_versions.mix(ch_qc.versions)
 
     ch_cdm_input = ch_cdm.join(ch_qc.QC)
