@@ -4,6 +4,7 @@ process COYOTE {
 
 	input:
 		tuple val(sampleId), path(agg_vcf)
+        tuple val(sampleId2), path(qc_val)
         tuple val(sample), val(clarityId), val(poolId)
         val(outdir)
 
@@ -12,28 +13,33 @@ process COYOTE {
 	
 	script:
 		def id = "${sampleId}-fusions"
-		def group = 'solidRNA_GMSv5'
-		def finaloutdir = '${outdir}/solid_ST_RNA/finalResults/'
+		def finaloutdir = "${params.outdir}/${params.subdir}/finalResults/"
 
 
         // Actual script
         """
         echo "import_fusion_to_coyote.pl \\
             --fusions ${finaloutdir}${agg_vcf} \\
+            --qc ${finaloutdir}${qc_val} \\
             --id ${id} \\
-            --group ${group} \\
+            --group ${params.coyote_group} \\
             --clarity-sample-id ${clarityId} \\
             --clarity-pool-id ${poolId}" > ${id}.coyote
         """
 
         // Stub section for simplified testing
         stub:
+    	
+        def id = "${sampleId}-fusions"
+		def finaloutdir = "${params.outdir}/${params.subdir}/finalResults/"
+
         """
         echo "import_fusion_to_coyote.pl \\
-            --fusions ${outdir}/solid_ST_RNA/finalResults/${agg_vcf} \\
-            --id ${sampleId}-fusions \\
-            --group solidRNA_GMSv5 \\
+            --fusions ${finaloutdir}${agg_vcf} \\
+            --qc ${finaloutdir}${qc_val} \\
+            --id ${id} \\
+            --group ${params.coyote_group} \\
             --clarity-sample-id ${clarityId} \\
-            --clarity-pool-id ${poolId}" > ${sampleId}-fusions.coyote
+            --clarity-pool-id ${poolId}" > ${id}.coyote
         """
 }

@@ -137,11 +137,20 @@ ighDux4bed = params.ighdux4
     cdmWorkflow (ch_cdm_input, ch_outdir)
 
     ch_coyote_fusion = params.exon_skipping ? ch_fusionsFinal.filtered : ch_fusionsAll.aggregate
-    coyoteWorkflow (    ch_coyote_fusion,
-                        ch_qc.QC,
-                        metaCoyote,
-                        ch_outdir )
-    
+
+
+    if (params.coyote_group == "fusion") {
+        ch_aggregate_results = ch_coyote_fusion.mix(ch_qc.QC).mix(ch_quant.expr).mix(ch_quant.cls)
+        ch_aggregate_results.groupTuple().view()
+        coyoteWorkflow (ch_aggregate_results.groupTuple(),metaCoyote ) 
+    } else {
+        ch_aggregate_results = ch_coyote_fusion.mix(ch_qc.QC)
+        ch_aggregate_results.groupTuple().view()
+        coyoteWorkflow (ch_aggregate_results.groupTuple(),metaCoyote )
+
+    }
+
+
     sampleInfo
         .map { id, read1, read2 -> id }
         .set { idOnly }

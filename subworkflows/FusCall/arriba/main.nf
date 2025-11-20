@@ -33,7 +33,7 @@ workflow arribaWorkflow {
 
         VIS_INPUT = SAMTOOLS_SORT.out.sorted_bam.join(ARRIBA_FUSCALL.out.fusions)
 
-        SAMTOOLS_SORT.out.sorted_bam.join(ARRIBA_FUSCALL.out.fusions).view()
+        // SAMTOOLS_SORT.out.sorted_bam.join(ARRIBA_FUSCALL.out.fusions).view()
         ARRIBA_VISUALIZATION (VIS_INPUT,gtf,cytobands, proteinDomains )
         ch_versions = ch_versions.mix(ARRIBA_VISUALIZATION.out.versions)
         

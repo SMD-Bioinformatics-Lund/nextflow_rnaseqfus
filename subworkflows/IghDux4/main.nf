@@ -32,7 +32,7 @@ workflow ighDux4Workflow {
         
         realignBwa = readsInfo.combine(SAMTOOLS_VIEW_IGHDUX4.out.duxreads)
 
-        realignBwa.view()
+        //realignBwa.view()
 
         REALIGN_BWA (fasta, metaCoyote, realignBwa )
         ch_versions = ch_versions.mix( REALIGN_BWA.out.versions) 

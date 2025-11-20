@@ -11,10 +11,10 @@ workflow aggFusionWorkflow_PANEL {
     main:
     ch_versions = Channel.empty()
     AGGREGATE_FUSION_PANEL(fusionCatcher, arribaFusion, starFusion, exonskip) 
-    ch_versions = ch_versions.mix(AGGREGATE_FUSION.out.versions) 
+    ch_versions = ch_versions.mix(AGGREGATE_FUSION_PANEL.out.versions) 
     
     emit:
-    aggregate = AGGREGATE_FUSION.PANEL.out.aggregated_vcf
+    aggregate = AGGREGATE_FUSION_PANEL.out.aggregated_vcf
     versions = ch_versions
 }
 

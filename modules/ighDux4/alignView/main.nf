@@ -14,7 +14,7 @@ output:
 
 script:
 def prefix = "${sampleId}" + "_IGHDUX4_reads_n200_grh38"
-println (prefix)
+// println (prefix)
 
 """
 samtools view -L ${ighDux4Bed} ${bam} | cut -f 1 | awk '!x[\$0]++' > ${prefix}.txt 
