@@ -97,10 +97,10 @@ ighDux4bed = params.ighdux4
     fusionCatcherWorkflow ( refFusioncatcher, ch_subsample.subSample ).set{ ch_fusioncatcher }
     ch_versions = ch_versions.mix(ch_fusioncatcher.versions)
 
-    starFusionWorkflow ( params.pairEnd, refStarfusion,ch_subsample.subSample ).set{ ch_starfusion }
+    starFusionWorkflow ( params.pairEnd, refStarfusion,sampleInfo ).set{ ch_starfusion }
     ch_versions = ch_versions.mix(ch_starfusion.versions)
 
-    arribaWorkflow( refStar, ch_subsample.subSample, fastaHuman, gtfGencode, blacklistArriba,  knownfusionsArriba, proteinDomainArriba, cytobandArriba ).set{ ch_arriba }
+    arribaWorkflow( refStar, sampleInfo, fastaHuman, gtfGencode, blacklistArriba,  knownfusionsArriba, proteinDomainArriba, cytobandArriba ).set{ ch_arriba }
     ch_versions = ch_versions.mix(ch_arriba.versions)
 
     ch_flendist = Channel.empty()
@@ -132,7 +132,7 @@ ighDux4bed = params.ighdux4
         ch_flendist = ch_quant.flenDist
     }
 
-    qcWorkflow ( ch_subsample.subSample, 
+    qcWorkflow ( sampleInfo, 
                  bedRefRseqc,
                  hg38,
                  refBed,
