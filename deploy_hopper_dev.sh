@@ -59,6 +59,7 @@ echo "Copying configuration file..."
 cp "$DIR"/nextflow.config "$DIR"/configs/nextflow.hopper.config 
 copy_file "$DIR/configs/nextflow.hopper.config" "$PIPELINE_DEST/nextflow.config"
 copy_directory "$DIR/configs" "$PIPELINE_DEST"
+copy_directory "$DIR/assets" "$PIPELINE_DEST"
 
 echo "Copying other files..."
 copy_directory "$DIR/resources" "$PIPELINE_DEST"

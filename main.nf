@@ -121,13 +121,13 @@ ighDux4bed = params.ighdux4
 
  
     } else if (params.customDuxIgh) {
-        ighDux4Workflow ( refStar, ch_subsample.subSample, ighDux4bed, fastaIndexFile,  metaCoyote ).set{ ch_metEgfr }
+        ighDux4Workflow ( refStar, sampleInfo, ighDux4bed, fastaIndexFile,  metaCoyote ).set{ ch_metEgfr }
         ch_versions = ch_versions.mix(ch_metEgfr.versions)
         aggFusionWorkflow_WTS ( ch_fusioncatcher.fusion,   
                     ch_arriba.fusion,
                     ch_starfusion.fusion).set {  ch_fusionsAll }
         ch_versions = ch_versions.mix(ch_fusionsAll.versions)
-        quantWorkflow ( ch_subsample.subSample ).set { ch_quant }
+        quantWorkflow ( sampleInfo ).set { ch_quant }
         ch_versions = ch_versions.mix(ch_quant.versions)
         ch_flendist = ch_quant.flenDist
     }
