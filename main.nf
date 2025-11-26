@@ -123,6 +123,8 @@ ighDux4bed = params.ighdux4
     } else if (params.customDuxIgh) {
         ighDux4Workflow ( refStar, ch_subsample.subSample, ighDux4bed, fastaIndexFile,  metaCoyote ).set{ ch_metEgfr }
         ch_versions = ch_versions.mix(ch_metEgfr.versions)
+        
+        // add arriba-rescue_workflow
         aggFusionWorkflow_WTS ( ch_fusioncatcher.fusion,   
                     ch_arriba.fusion,
                     ch_starfusion.fusion).set {  ch_fusionsAll }
