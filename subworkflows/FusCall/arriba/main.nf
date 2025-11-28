@@ -38,13 +38,13 @@ workflow arribaWorkflow {
         ARRIBA_VISUALIZATION (VIS_INPUT,gtf,cytobands, proteinDomains )
         ch_versions = ch_versions.mix(ARRIBA_VISUALIZATION.out.versions)
 
-        if ( params.cdm == "fusion") {
+        if ( params.arriba_filter) {
             ARRIBA_FILTER(ARRIBA_FUSCALL.out.fusions, ARRIBA_FUSCALL.out.discarded_fusions)
             ch_versions = ch_versions.mix(ARRIBA_FILTER.out.versions)
         }
         
     emit:
-        fusion = params.cdm == "fusion" ? ARRIBA_FILTER.out.fusions :  ARRIBA_FUSCALL.out.fusions
+        fusion = params.arriba_filter ? ARRIBA_FILTER.out.fusions :  ARRIBA_FUSCALL.out.fusions
         fusionDiscarded = ARRIBA_FUSCALL.out.discarded_fusions
         bam = SAMTOOLS_SORT.out.sorted_bam
         metrices = ARRIBA_ALIGN.out.logs

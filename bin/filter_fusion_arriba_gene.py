@@ -131,4 +131,4 @@ def Main():
 if __name__ == "__main__":
     Main()
 
-### Run as python filter_fusions.py --g fusion_filter_list.txt --f NIQAS8gbg-RNA-V2.fusions.discarded.tsv
+### Run as python filter_fusion_arriba_gene.py --g fusion_filter_list.txt --f NIQAS8gbg-RNA-V2.fusions.discarded.tsv
