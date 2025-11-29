@@ -22,7 +22,7 @@ process ARRIBA_FILTER {
 
         cat <<-END_VERSIONS > versions.yml
         "${task.process}":
-                python: \$(python --version 2>&1| sed -e 's/Python //g')
+                python: \$(python --version 2>&1| åsed -e 's/Python //g')
         END_VERSIONS
         """
         stub:

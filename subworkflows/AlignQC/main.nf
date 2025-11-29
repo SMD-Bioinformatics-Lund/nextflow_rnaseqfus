@@ -11,8 +11,9 @@ include { INNER_DISTANCE                } from '../../modules/picard/main.nf'
 include { GENEBODY                      } from '../../modules/geneBody/main.nf'
 include { PROVIDER                      } from '../../modules/provider/main.nf'
 include { DEEPTOOLS                     } from '../../modules/deeptools/main.nf'
+include { QCEXTRACT_TWISTFUSION         } from '../../modules/postalnqc/main.nf'
 include { QCEXTRACT_GMSV5               } from '../../modules/postalnqc/main.nf'
-include { QCEXTRACT                     } from '../../modules/postalnqc/main.nf'
+include { QCEXTRACT_WTS                 } from '../../modules/postalnqc/main.nf'
 
 workflow qcWorkflow {
     take:
@@ -63,24 +64,27 @@ workflow qcWorkflow {
                               PROVIDER.out.genotypes,
                               GENEBODY.out.gene_body_coverage, 
                               DEEPTOOLS.out.fragment_size)
+            QC   = QCEXTRACT_GMSV5.out.rnaseq_qc
             ch_versions = ch_versions.mix(QCEXTRACT_GMSV5.out.versions) 
                 
         } else if ( params.cdm == "twistrnafusionv1-0")  {
-            QCEXTRACT ( starmetrices,
+            QCEXTRACT_TWISTFUSION ( starmetrices,
                     PROVIDER.out.genotypes,
                     GENEBODY.out.gene_body_coverage, 
                     INNER_DISTANCE.out.insertStatsRseqc)
-            ch_versions = ch_versions.mix(QCEXTRACT.out.versions) 
+            QC = QCEXTRACT_TWISTFUSION.out.rnaseq_qc
+            ch_versions = ch_versions.mix(QCEXTRACT_TWISTFUSION.out.versions) 
             
         } else {
-            QCEXTRACT ( starmetrices,
+            QCEXTRACT_WTS ( starmetrices,
             PROVIDER.out.genotypes,
             GENEBODY.out.gene_body_coverage, 
             flendist)
-            ch_versions = ch_versions.mix(QCEXTRACT.out.versions)
+            QC = QCEXTRACT_WTS.out.rnaseq_qc
+            ch_versions = ch_versions.mix(QCEXTRACT_WTS.out.versions)
 
         }
     emit:
-        QC = (params.cdm == 'solidRNA_GMSv5') ? QCEXTRACT_GMSV5.out.rnaseq_qc : QCEXTRACT.out.rnaseq_qc
+        QC 
         versions = ch_versions
 }

@@ -15,7 +15,7 @@ process FUSIONCATCHER {
 
     // Actual script
     """
-    fusioncatcher.py -d ${refFusioncatcher} -i ${option} -p ${task.cpus} -o .
+    fusioncatcher.py -d ${refFusioncatcher} -i ${option} -p ${task.cpus} --limitSjdbInsertNsj 50000000 --limitOutSJcollapsed 2000000  -o .
     mv final-list_candidate-fusion-genes.txt ${sampleId}.final-list_candidate-fusion-genes.txt
     
     cat <<-END_VERSIONS > versions.yml
