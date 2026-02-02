@@ -11,7 +11,7 @@ process COYOTE {
 	
 	script:
         if( importy.size() >= 3 ) {
-            id              = "${sampleId}-fusions"
+            id              = sampleId.contains('fusion') ? "${sampleId}s" : "${sampleId}-fusions"
             finaloutdir     = "${params.outdir}/${params.subdir}/finalResults/"
             fus_idx         = importy.findIndexOf{ it =~ 'vcf' }
             qc_idx          = importy.findIndexOf{ it =~ 'rnaseq_QC' }
@@ -36,7 +36,7 @@ process COYOTE {
             """
         } else {
             println (importy.size())
-            id              = "${sampleId}-fusions"
+            id              = sampleId.contains('fusion') ? "${sampleId}s" : "${sampleId}-fusions"
             finaloutdir     = "${params.outdir}/${params.subdir}/finalResults/"
             fus_idx         = importy.findIndexOf{ it =~ 'vcf' }
             qc_idx          = importy.findIndexOf{ it =~ 'rnaseq_QC' }
@@ -57,7 +57,7 @@ process COYOTE {
     // Stub section for simplified testing
     stub:
         if( importy.size() >= 3 ) {
-            id              = "${sampleId}-fusions"
+            id              = sampleId.contains('fusion') ? "${sampleId}s" : "${sampleId}-fusions"
             finaloutdir     = "${params.outdir}/${params.subdir}/finalResults/"
             fus_idx         = importy.findIndexOf{ it =~ 'vcf' }
             qc_idx          = importy.findIndexOf{ it =~ 'rnaseq_QC' }
@@ -82,7 +82,7 @@ process COYOTE {
             """
         } else {
             println (importy.size())
-            id              = "${sampleId}-fusions"
+            id              = sampleId.contains('fusion') ? "${sampleId}s" : "${sampleId}-fusions"
             finaloutdir     = "${params.outdir}/${params.subdir}/finalResults/"
             fus_idx         = importy.findIndexOf{ it =~ 'vcf' }
             qc_idx          = importy.findIndexOf{ it =~ 'rnaseq_QC' }
