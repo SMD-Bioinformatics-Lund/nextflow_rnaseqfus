@@ -1,2 +1,5 @@
+git.hash
 *log*
 transfer.log*
+main_v1.nf
+nextflow_hopper_v1.config
