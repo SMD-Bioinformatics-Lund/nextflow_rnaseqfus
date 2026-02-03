@@ -1,6 +1,8 @@
 # SMD-Bioinformatics Lund - `nextflow_rnaseqfus`
 
-### RNA Fusion Detection Pipeline (WTS & Fusion Panels)
+RNA Fusion Detection Pipeline (WTS & Fusion Panels)
+
+---
 
 ## Overview
 
