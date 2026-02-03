@@ -1,111 +1,133 @@
-# SMD-Bioinformatics Lund – _Somatic Whole Genome Sequencing (SWGS) Pipeline_
+# SMD-Bioinformatics Lund - `nextflow_rnaseqfus`
 
-This page describes how to run the Somatic Whole Genome Sequencing Pipeline (main.nf) on the SMD-Bioinformatics computing cluster (Hopper/Grace), as well as how the pipeline integrates with the automated infrastructure.
+### RNA Fusion Detection Pipeline (WTS & Fusion Panels)
 
 ## Overview
 
-The main entry point for the pipeline is:
+This documentation describes how to run the nextflow_rnaseqfus pipeline for:
 
-```
+- Whole Transcriptome Sequencing (WTS)
+- Fusion gene panel analysis
+
+on the SMD Bioinformatics SLURM clusters - Hopper and Grace
+
+It also explains how the pipeline integrates with the SMD automated processing infrastructure.
+
+The main workflow entry point is:
+
+```css
 main.nf
+
 ```
 
-Before running the pipeline, make sure to update the Nextflow config (nextflow.config) to match the server environment and to choose the correct panel based on the biological question—e.g., hematology or solid tumor.
+Detailed documentation for the bioinformatics tools used in the workflow is available in the [documentaion](./doc/)
 
-Our compute environments currently include the Hopper and Grace SLURM clusters.
-A corresponding Nextflow profile (hopper) is available in the configuration file.
+## Purpose
 
-The elaborate technical documentation on the bioinformatics softwares used are described in the [documenation](./doc).
+This document helps users to:
 
-### Running the Pipeline Manually
+- Launch and manage pipeline runs on the clusters
+- Configure the pipeline correctly for different assay types
+- Understand how the workflow integrates with automation and downstream systems
 
-#### 1. Hematology Pipeline
+## Compute Environment
+
+The pipelines runs on the SLURM-based clusters in hopper and grace
+
+Before running:
+
+1. Ensure `nextflow.config` matches the server environment
+2. Select the correct assays configuration
+   - WTS_RNA_FUSION
+   - TWIST_RNA_FUSION
+   - GMS_ST_RNA_FUSION
+
+## Running the pipeline Manually
+
+Load required modules:
 
 ```bash
+
 module load singularity Java nextflow/21.10.6
 
-nextflow run main.nf \
-    -entry SWGP \
-    -c nextflow.config \
-    --csv sample.csv \
-    -profile hema \
-    -with-report /path/to/workdir/nextflow/reports/sample.report.html \
-    -with-trace /path/to/workdir/nextflow/reports/sample.trace.txt \
-    -with-timeline /path/to/workdir/nextflow/reports/sample.timeline.html \
-    -work-dir /path/to/workdir/nextflow_tmp
 ```
 
-#### 2. Solid Tumor Pipeline
+### WTS
 
 ```bash
-module load singularity Java nextflow/21.10.6
-
 nextflow run main.nf \
-    -entry SWGP \
-    -c nextflow.config \
-    --csv sample.csv \
-    -profile solid \
-    -with-report /path/to/workdir/nextflow/reports/sample.report.html \
-    -with-trace /path/to/workdir/nextflow/reports/sample.trace.txt \
-    -with-timeline /path/to/workdir/nextflow/reports/sample.timeline.html \
-    -work-dir /path/to/workdir/nextflow_tmp
+  -c nextflow.config \
+  --csv sample.csv \
+  -profile WTS_RNA_FUSION \
+  -with-report work/reports/sample.report.html \
+  -with-trace work/reports/sample.trace.txt \
+  -with-timeline work/reports/sample.timeline.html \
+  -work-dir work/nextflow_tmp
+
 ```
 
-#### 3. Test / Local Minimal Profile
-
-A lightweight test profile exists for local or simplified runs:
+### TWIST_RNA_FUSION
 
 ```bash
-module load singularity Java nextflow/21.10.6
-
 nextflow run main.nf \
-    -entry SWGP \
-    -c nextflow.config \
-    -profile hopper \
-    --csv sample.csv \
-    -profile test \
-    --dev \
-    -with-report /path/to/workdir/nextflow/reports/sample.report.html \
-    -with-trace /path/to/workdir/nextflow/reports/sample.trace.txt \
-    -with-timeline /path/to/workdir/nextflow/reports/sample.timeline.html \
-    -work-dir /path/to/workdir/nextflow_tmp
-```
-
-### Integration With SMD Automated Pipeline System
-
-In production, pipeline execution is automated using the
-bnf-infrastructure
-repository.
-
-Two key components handle this:
+  -c nextflow.config \
+  --csv sample.csv \
+  -profile TWIST_RNA_FUSION \
+  -with-report work/reports/sample.report.html \
+  -with-trace work/reports/sample.trace.txt \
+  -with-timeline work/reports/sample.timeline.html \
+  -work-dir work/nextflow_tmp
 
 ```
+
+### Test / Minimal Profile
+
+```bash
+nextflow run main.nf \
+  -c nextflow.config \
+  --csv sample.csv \
+  -profile TEST_PROFILE \
+  -with-report work/reports/sample.report.html \
+  -with-trace work/reports/sample.trace.txt \
+  -with-timeline work/reports/sample.timeline.html \
+  -work-dir work/nextflow_tmp
+```
+
+## Integration with the SMD Automated Pipeline System
+
+In production, pipeline execution is automated using the bnf-infrastructure system.
+
+Key Components
+
 1. start_nextflow_analysis.pl
-```
 
-A Perl script that monitors and triggers pipeline runs based on the availability of CSV files from earlier `Bjorn` system
+A monitoring script that automatically triggers pipeline runs when new CSV files become available from the Bjorn system.
 
-```
 2. pipeline_files.config
-```
 
-Defines which pipeline, container, and server settings to use.
+Defines:
 
-Example configuration:
+- Pipeline path
+- Container
+- Cluster settings
+- profile
+- Nextflow and Singularity versions
 
-```
-[tumwgs-hema]
-pipeline = /production_pipeline/nextflow_tumwgs/main.nf -entry SWGP --profile hema
-container = /production_pipeline/nextflow_tumwgs/container/tumwgs_container.sif
+Example Configuration
+
+```bash
+[rnaseq-fusion]
+pipeline =  /fs1/saile/prj/pipeline_test/nextflow_rnaseqfus/main.nf  --profile profile WTS_RNA_FUSION
+container = /production_pipeline/resources/containers/rnaseqfus_active.sif
 singularity_version = 3.8.0
 nextflow_version = 21.04.2
 executor = slurm
 cluster = grace
 queue = normal
 
-[tumwgs-solid]
-pipeline = /production_pipeline/nextflow_tumwgs/main.nf -entry SWGP --profile solid
-container = /production_pipeline/nextflow_tumwgs/container/tumwgs_container.sif
+[twistrnafusionv1-0]
+pipeline =  /fs1/saile/prj/pipeline_test/nextflow_rnaseqfus/main.nf  --profile profile TWIST_RNA_FUSION
+container = /production_pipeline/resources/containers/rnaseqfus_active.sif
 singularity_version = 3.8.0
 nextflow_version = 21.04.2
 executor = slurm
