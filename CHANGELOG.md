@@ -2,6 +2,17 @@
 
 All notable changes to the Eyrie sample management system will be documented in this file.
 
+### v2.0.0
+
+### Major release
+
+- WTS and fusion gene panel remerged into same pipeline
+- Assay based profile (WTS, TWIST-RNA_fusion, GMS-ST)
+- Fusion gene list for rescuing Hematological malignancies for rare fusions
+- Optimized DUX4-IGH parameters set for the FusionCatcher
+- Towards DSL2 nextflow format
+- Batch-start for all profiles
+
 ### v1.0.1
 
 - Added the CHANGELOGS
