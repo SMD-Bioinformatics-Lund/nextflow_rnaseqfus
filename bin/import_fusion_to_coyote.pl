@@ -13,12 +13,19 @@ use Getopt::Long;
 use JSON;
 
 my %opt;
-GetOptions( \%opt, 'fusions=s', 'id=s', 'clarity-sample-id=s', 'clarity-pool-id=s', 'group=s', 'qc=s', 'classification=s', 'expr=s' );
+GetOptions( \%opt, 
+            'fusions=s', 
+            'id=s', 
+            'clarity-sample-id=s', 
+            'clarity-pool-id=s', 
+            'group=s', 
+            'qc=s', 
+            'classification=s', 
+            'expr=s' );
 
 
 my( $fus_file, $name ) = ( $opt{fusions}, $opt{id} );
 my @groups = split /,/, $opt{group};
-
 
 # Read QC data
 my @QC;
@@ -27,25 +34,26 @@ my $samples;
 if( $opt{qc} ) {
     my @qc_files = split /,/, $opt{qc};
     foreach( @qc_files ) {
-	if( -s $_ ) {
-	    push @QC, read_json($_)
-	}
-	else {
-	    print STDERR "WARNING: QC-json does not exist: $_\n.";
-	}
+	    if( -s $_ ) {
+	        push @QC, read_json($_)
+	    }
+	    else {
+	        print STDERR "WARNING: QC-json does not exist: $_\n.";
+	    }
     }
 }
 
+# Add the classificationd data
 my $classification_data;
 if( $opt{classification} ) {
     $classification_data = read_json($opt{classification});
 }
 
+# Add the expresssion data
 my $expression_data;
 if( $opt{expr} ) {
     $expression_data = read_json($opt{expr});
 }
-
 
 
 #################
@@ -54,7 +62,6 @@ if( $opt{expr} ) {
 
 # Connect to mongodb
 my $client = MongoDB->connect();
-
 
 # Prepare data to insert into sample collection
 my $SAMP_COLL = $client->ns("coyote.samples");
@@ -73,24 +80,24 @@ warn "Sample with name $name already exists.\n" if $cnt > 0;
 
 # Insert sample document if it doesn't already exist
 if( $cnt == 0 ) {
-    my %sample_data = ( 'name'=>$name, 'groups'=>\@groups, 'time_added'=>DateTime->now, 'fusion_files'=>[$fus_file] );
+    my %sample_data = ( 'name'=>$name, 
+                        'groups'=>\@groups, 'time_added'=>DateTime->now,    'fusion_files'=>[$fus_file] );
     if ( scalar @QC > 0 ) {
-	$sample_data{QC} = \@QC;
+	    $sample_data{QC} = \@QC;
     }
     
     # Add clarity information if specified
     if( $opt{'clarity-sample-id'} ) {
-	$sample_data{'clarity-sample-id'} =  $opt{'clarity-sample-id'};
+	    $sample_data{'clarity-sample-id'} =  $opt{'clarity-sample-id'};
     }
     if( $opt{'clarity-pool-id'} ) {
-	$sample_data{'clarity-pool-id'} =  $opt{'clarity-pool-id'};
+	    $sample_data{'clarity-pool-id'} =  $opt{'clarity-pool-id'};
     }
     
     # Insert into collection
     my $result2 = $SAMP_COLL->insert_one(\%sample_data); 
     $SAMPLE_ID = $result2->inserted_id->value;
 }
-
 
 # Add expression classification data to samples document
 if( $classification_data ) {
@@ -102,12 +109,11 @@ if( $expression_data ) {
     my $expr_result = $SAMP_COLL->update_one( {'_id' => MongoDB::OID->new(value => $SAMPLE_ID)}, {'$set' => {'expr' => $expression_data}} );
 }
 
-
 # Add fusions to mongodb collection 
 if( $fus_file and -s $fus_file ) {
     my $fusions = read_json($fus_file);
     foreach my $f ( @$fusions ) {
-	$f->{SAMPLE_ID} = $SAMPLE_ID;
+	    $f->{SAMPLE_ID} = $SAMPLE_ID;
     }
 
     my $fusions_coll = $client->ns("coyote.fusions");
@@ -115,15 +121,11 @@ if( $fus_file and -s $fus_file ) {
     my $result = $fus->insert_many($fusions);
 }
 
-
 sub fix {
     my $str = shift;
     #$str =~ s/-/_/g;
     return $str;
 }
-
-
-
 
 sub read_json {
     my $fn = shift;

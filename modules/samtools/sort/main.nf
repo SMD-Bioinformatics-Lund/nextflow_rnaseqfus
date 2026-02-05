@@ -1,0 +1,38 @@
+process SAMTOOLS_SORT {
+    tag "$sampleId"
+    label 'process_medium'
+
+    input:
+        tuple val(sampleId), path(bam)
+
+    output: 
+        tuple val(sampleId), path("*.sorted.bam"), path("*.sorted.bam.bai"), emit: sorted_bam
+        path "versions.yml", emit: versions  // Emit version information in YAML format
+
+    script:
+    def prefix = "${sampleId}.sorted"
+
+    // Actual script
+    """
+    samtools sort -@ ${task.cpus} -o ${prefix}.bam -T $sampleId $bam
+    samtools index -@ ${task.cpus} ${prefix}.bam
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        samtools: \$(echo \$(samtools 2>&1) | sed 's/.*Version: //; s/ .*//')
+    END_VERSIONS
+    """
+
+    // Stub section for simplified testing
+    stub:
+    """
+    touch ${sampleId}.sorted.bam
+    touch ${sampleId}.sorted.bam.bai
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        samtools: \$(echo \$(samtools 2>&1) | sed 's/.*Version: //; s/ .*//')
+    END_VERSIONS
+    """
+
+}
