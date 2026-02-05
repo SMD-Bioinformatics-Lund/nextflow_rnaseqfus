@@ -2,7 +2,7 @@
 
 All notable changes to the Eyrie sample management system will be documented in this file.
 
-### 2.0.0
+### v2.0.0
 
 ### Major release
 
