@@ -61,6 +61,7 @@ Channel
 ch_outdir = Channel.fromPath(params.outdir)
 //ch_outdir.view()
 
+
 sampleReads = params.subsampling_number
 fastaHuman = params.fasta
 fastaIndexFile = params.fastaIndex
@@ -83,9 +84,8 @@ refBedXY =  params.ref_bedXY
 
 metEgfrBed = params.metEgfr
 stGenePanel = params.stgenePanel_file
-
 ighDux4bed = params.ighdux4
-
+csv = file(params.csv)
 
 
  workflow {
