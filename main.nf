@@ -168,3 +168,29 @@ ighDux4bed = params.ighdux4
     CUSTOM_DUMPSOFTWAREVERSIONS (
         ch_versions.unique().collectFile(name: 'collated_versions.yml'), idOnly ) 
  }
+
+ workflow.onComplete {
+
+	def msg = """\
+		Pipeline execution summary
+		---------------------------
+		Completed at: ${workflow.complete}
+		Duration    : ${workflow.duration}
+		Success     : ${workflow.success}
+		scriptFile  : ${workflow.scriptFile}
+		workDir     : ${workflow.workDir}
+		exit status : ${workflow.exitStatus}
+		errorMessage: ${workflow.errorMessage}
+		errorReport :
+		"""
+		.stripIndent()
+	def error = """\
+		${workflow.errorReport}
+		"""
+		.stripIndent()
+
+	base = csv.getBaseName()
+	logFile = file("/fs1/results/cron/logs/" + base + ".complete")
+	logFile.text = msg
+	logFile.append(error)
+}
