@@ -153,7 +153,7 @@ sub read_arriba {
         my $read2 = int($fus->{'split_reads2'} // 0);
 
         # Get spanning reads and pairs (Strictly cast to Integer)
-        $fusion_info{spanreads} = ($read1 > $read2) ? $read1 : $read2;
+        $fusion_info{spanreads} = $read1 + $read2;
         $fusion_info{spanpairs} = int($fus->{discordant_mates} // 0);
         
         # NOTE: Keeping this as a string representation since it's a categorical label
