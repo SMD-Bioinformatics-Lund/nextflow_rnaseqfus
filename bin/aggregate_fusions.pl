@@ -114,10 +114,10 @@ sub read_fusioncatcher {
 	$fusion_info{breakpoint2} = $fus->{'Fusion_point_for_gene_2(3end_fusion_partner)'};
 	
 	# Get spanning reads and pairs
-	$fusion_info{spanreads} = $fus->{Spanning_unique_reads};
-	$fusion_info{spanpairs} = $fus->{Spanning_pairs};
-	$fusion_info{longestanchor} = $fus->{Longest_anchor_found};
-	$fusion_info{commonreads} = $fus->{Counts_of_common_mapping_reads};
+	$fusion_info{spanreads} = int($fus->{Spanning_unique_reads} // 0);
+	$fusion_info{spanpairs} = int($fus->{Spanning_pairs} // 0);
+	$fusion_info{longestanchor} = int($fus->{Longest_anchor_found} // 0);
+	$fusion_info{commonreads} = int($fus->{Counts_of_common_mapping_reads} // 0	);
 	
 	$fusion_info{desc} = $fus->{Fusion_description};
 	$fusion_info{effect} = $fus->{Predicted_effect};
@@ -132,68 +132,76 @@ sub read_fusioncatcher {
 
 
 sub read_arriba {
-	my $fn = shift;
+    my $fn = shift;
     my $agg = shift;
 
     my @fcatcher = read_tsv($fn);
 
-
     foreach my $fus ( @fcatcher ) {
-	# Get gene symbol pair
-	my $gene1 = $fus->{'#gene1'};
-	my $gene2 = $fus->{'gene2'};
-	my $genes = noversion($gene1)."^".noversion($gene2);
-	my %fusion_info;
-	
-	# Get breakpoints 
-	$fusion_info{breakpoint1} = $fus->{'breakpoint1'};
-	$fusion_info{breakpoint2} = $fus->{'breakpoint2'}; 
-	my $read1 =  $fus->{'split_reads1'};
-	my $read2 = $fus->{'split_reads2'};
+        # Get gene symbol pair
+        my $gene1 = $fus->{'#gene1'};
+        my $gene2 = $fus->{'gene2'};
+        my $genes = noversion($gene1)."^".noversion($gene2);
+        my %fusion_info;
+        
+        # Get breakpoints 
+        $fusion_info{breakpoint1} = $fus->{'breakpoint1'};
+        $fusion_info{breakpoint2} = $fus->{'breakpoint2'}; 
+        
+        # Force integer context for the split reads immediately
+        my $read1 = int($fus->{'split_reads1'} // 0);
+        my $read2 = int($fus->{'split_reads2'} // 0);
 
-	# Get spanning reads and pairs
-	$fusion_info{spanreads} = $read1 + $read2;
-	$fusion_info{spanpairs} = 0;
-    $fusion_info{longestanchor} = ( $read1 + $read2 > 25 ? ">25" : "<25" );
-	
-	$fusion_info{desc} = $fus->{'confidence'};
-	$fusion_info{effect} = $fus->{'reading_frame'};
-	
-	$fusion_info{caller} = 'arriba';
-	
-	unless( $fusion_info{desc} =~ /banned/ ) {
-	    push @{$agg->{$genes}}, \%fusion_info;
-	}
+        # Get spanning reads and pairs (Strictly cast to Integer)
+        $fusion_info{spanreads} = ($read1 > $read2) ? $read1 : $read2;
+        $fusion_info{spanpairs} = int($fus->{discordant_mates} // 0);
+        
+        # NOTE: Keeping this as a string representation since it's a categorical label
+        $fusion_info{longestanchor} = ( $read1 + $read2 > 25 ? ">25" : "<25" );
+        
+        $fusion_info{desc}   = $fus->{'confidence'};
+        $fusion_info{effect} = $fus->{'reading_frame'};
+        
+        $fusion_info{caller} = 'arriba';
+        
+        unless( $fusion_info{desc} =~ /banned/ ) {
+            push @{$agg->{$genes}}, \%fusion_info;
+        }
     }	
 }
+
 
 sub read_starfusion {
     my $fn = shift;
     my $agg = shift;
     
-    my @starf    = read_tsv($fn);    
+    my @starf = read_tsv($fn);    
     foreach my $fus ( @starf ) {
 
-		# Get gene symbol pair
-		my $gene1 = (split /\^/, $fus->{LeftGene})[0];
-		my $gene2 = (split /\^/, $fus->{RightGene})[0];
-		my $genes = noversion($gene1)."^".noversion($gene2);
-		my %fusion_info;
+        # Get gene symbol pair
+        my $gene1 = (split /\^/, $fus->{LeftGene})[0];
+        my $gene2 = (split /\^/, $fus->{RightGene})[0];
+        my $genes = noversion($gene1)."^".noversion($gene2);
+        my %fusion_info;
 
-		# Get breakpoints 
-		$fus->{LeftBreakpoint} =~ s/chr//;
-		$fus->{RightBreakpoint} =~ s/chr//;
-		$fusion_info{breakpoint1} = $fus->{LeftBreakpoint};
-		$fusion_info{breakpoint2} = $fus->{RightBreakpoint};
-		
-		# Get spanning reads and pairs
-		$fusion_info{spanreads} = $fus->{JunctionReadCount};
-		$fusion_info{spanpairs} = $fus->{SpanningFragCount};
-		$fusion_info{FFPM} = $fus->{FFPM};
-		$fusion_info{longestanchor} = ( $fus->{LargeAnchorSupport} eq "YES_LDAS" ? ">25" : "<25" );
-	
-		$fusion_info{caller} = 'starfusion';
-		push @{$agg->{$genes}}, \%fusion_info;
+        # Get breakpoints 
+        $fus->{LeftBreakpoint} =~ s/chr//;
+        $fus->{RightBreakpoint} =~ s/chr//;
+        $fusion_info{breakpoint1} = $fus->{LeftBreakpoint};
+        $fusion_info{breakpoint2} = $fus->{RightBreakpoint};
+        
+        # Get spanning reads and pairs (Strictly cast to Integer)
+        $fusion_info{spanreads} = int($fus->{JunctionReadCount} // 0);
+        $fusion_info{spanpairs} = int($fus->{SpanningFragCount} // 0);
+        
+        # Force numeric/float context for FFPM (retains decimal precision)
+        $fusion_info{FFPM} = 0 + ($fus->{FFPM} // 0.0);
+        
+        # Keeping this as a categorical string label
+        $fusion_info{longestanchor} = ( $fus->{LargeAnchorSupport} eq "YES_LDAS" ? ">25" : "<25" );
+    
+        $fusion_info{caller} = 'starfusion';
+        push @{$agg->{$genes}}, \%fusion_info;
     }
 }
 
