@@ -2,12 +2,16 @@
 
 All notable changes to the Eyrie sample management system will be documented in this file.
 
-### v2.0.1
+### v2.0.2
 - Updated the README.md to reflect the changes in the pipeline and the profiles
 - Fixed the issue with the fusion gene list for rescuing Hematological malignancies with 0 supporting reads being included in the final output
 - Fixed the issue with the aggregate script for integer values for the counts in the fusions were typed as strings which caused issues with the downstream analysis and filtering
 - Update arriba modueles to get the right format of the output for the fusion gene list for rescuing Hematological malignancies
 
+
+### v2.0.1
+- Updated the logs folder that was missed in the coyote module
+- Updated the log files for pipeline tracking and debugging
 
 ### v2.0.0
 
