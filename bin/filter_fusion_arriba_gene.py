@@ -87,7 +87,14 @@ def filter_fusions(gene_rules, arriba_file):
         annotation1 = cols[6]
         annotation2 = cols[7]
         confidence = cols[14]
+        split_reads_1 = int(cols[8])
+        split_reads_2 = int(cols[9])
+        discordant_mates = int(cols[10])
 
+        # Skip if no supporting reads
+        if split_reads_1 + split_reads_2 + discordant_mates == 0:
+            continue
+        
         # Only keep non-intronic
         if annotation1 == "intron" or annotation2 == "intron":
             continue
