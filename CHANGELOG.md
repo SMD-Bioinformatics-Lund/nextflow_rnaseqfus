@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to the Eyrie sample management system will be documented in this file.
+All notable changes to the nextflow_rnafusion is to be documented in this file.
 
 ### v2.0.2
 - Updated the README.md to reflect the changes in the pipeline and the profiles
