@@ -23,7 +23,7 @@ process ADD_READ_GROUPS {
     
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        Picard AddOrReplaceReadGroups: \$(java -jar /usr/picard/picard.jar AddOrReplaceReadGroups --version | sed 's/Version://')
+        Picard AddOrReplaceReadGroups: \$(java -jar /usr/picard/picard.jar AddOrReplaceReadGroups --version  2>&1 | sed 's/^Version: *//')
     END_VERSIONS
     """
 
@@ -34,7 +34,7 @@ process ADD_READ_GROUPS {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        Picard AddOrReplaceReadGroups: \$(java -jar /usr/picard/picard.jar AddOrReplaceReadGroups --version | sed 's/Version://')
+        Picard AddOrReplaceReadGroups: \$(java -jar /usr/picard/picard.jar AddOrReplaceReadGroups --version 2>&1 | sed 's/^Version: *//')
     END_VERSIONS
     """
 }
@@ -61,7 +61,7 @@ process MARK_DUPLICATES {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        Picard MarkDuplicates: \$(java -jar /usr/picard/picard.jar MarkDuplicates --version | sed 's/Version://')
+        Picard MarkDuplicates: \$(java -jar /usr/picard/picard.jar MarkDuplicates --version 2>&1 | sed 's/Version://')
     END_VERSIONS
     """
 
@@ -72,7 +72,7 @@ process MARK_DUPLICATES {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        Picard MarkDuplicates: \$(java -jar /usr/picard/picard.jar MarkDuplicates --version | sed 's/Version://')
+        Picard MarkDuplicates: \$(java -jar /usr/picard/picard.jar MarkDuplicates --version 2>&1 | sed 's/Version://')
     END_VERSIONS
     """
 }
@@ -101,7 +101,7 @@ process COLLECT_INSERT_SIZE_METRICS {
     
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        Picard CollectInsertSizeMetrics: \$(java -jar /usr/picard/picard.jar CollectInsertSizeMetrics --version | sed 's/Version://')
+        Picard CollectInsertSizeMetrics: \$(java -jar /usr/picard/picard.jar CollectInsertSizeMetrics --version 2>&1 | sed 's/Version://')
     END_VERSIONS
     """
 
@@ -113,7 +113,7 @@ process COLLECT_INSERT_SIZE_METRICS {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        Picard CollectInsertSizeMetrics: \$(java -jar /usr/picard/picard.jar CollectInsertSizeMetrics --version | sed 's/Version://')
+        Picard CollectInsertSizeMetrics: \$(java -jar /usr/picard/picard.jar CollectInsertSizeMetrics --version  2>&1 | sed 's/Version://')
     END_VERSIONS
     """
 }
@@ -142,7 +142,7 @@ process COLLECT_RNA_SEQ_METRICS {
     
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        Picard CollectRnaSeqMetrics: \$(java -jar /usr/picard/picard.jar CollectRnaSeqMetrics --version | sed 's/Version://')
+        Picard CollectRnaSeqMetrics: \$(java -jar /usr/picard/picard.jar CollectRnaSeqMetrics --version 2>&1 | sed 's/^Version: *//'
     END_VERSIONS
     """
 
@@ -153,7 +153,7 @@ process COLLECT_RNA_SEQ_METRICS {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        Picard CollectRnaSeqMetrics: \$(java -jar /usr/picard/picard.jar CollectRnaSeqMetrics --version | sed 's/Version://')
+        Picard CollectRnaSeqMetrics: \$(java -jar /usr/picard/picard.jar CollectRnaSeqMetrics --version 2>&1 | sed 's/^Version: *//')
     END_VERSIONS
     """
 }

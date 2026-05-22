@@ -15,14 +15,13 @@ process ARRIBA_FILTER {
         def args = task.ext.args ?: ''
 
         """
-        head -n 1 ${highconfidence} > header.txt
         filter_fusion_arriba_gene.py ${args} --f ${discarded}
-        uniq Selected.fusion.tsv > uniq_fusion.tsv
-        cat header.txt ${highconfidence} uniq_fusion.tsv > ${sampleId}.hc.rescued.fusions.tsv
+        uniq Selected.fusion.tsv |tail -n +2 > uniq_fusion.tsv
+        cat ${highconfidence} uniq_fusion.tsv > ${sampleId}.hc.rescued.fusions.tsv
 
         cat <<-END_VERSIONS > versions.yml
         "${task.process}":
-                python: \$(python --version 2>&1| åsed -e 's/Python //g')
+                python: \$(python --version 2>&1| sed -e 's/Python //g')
         END_VERSIONS
         """
         stub:
