@@ -142,7 +142,7 @@ process COLLECT_RNA_SEQ_METRICS {
     
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        Picard CollectRnaSeqMetrics: \$(java -jar /usr/picard/picard.jar CollectRnaSeqMetrics --version 2>&1 | sed 's/^Version: *//'
+        Picard CollectRnaSeqMetrics: \$(java -jar /usr/picard/picard.jar CollectRnaSeqMetrics --version 2>&1 | sed 's/^Version: *//')
     END_VERSIONS
     """
 
