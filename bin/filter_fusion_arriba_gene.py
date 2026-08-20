@@ -11,17 +11,19 @@ import argparse
 ###############################################################################
 def load_gene_list(gene_list_file):
     FilePath = os.path.abspath(gene_list_file)
-    fusion_rules = []
+    gene_pairs = []
 
     try:
         with open(FilePath) as f:
             for line in f:
+                if line.startswith("#"):
+                    continue
                 line = line.strip()
                 if not line:
                     continue
 
-                fusion_rules.append(line)
-        return fusion_rules
+                gene_pairs.append(line)
+        return gene_pairs
 
     except FileNotFoundError:
         print(f"[ERROR] Gene list file not found: {FilePath}")
@@ -30,20 +32,20 @@ def load_gene_list(gene_list_file):
 
 
 ###############################################################################
-# 2. Check if a gene pair matches ANY rule in the gene list
+# 2. Check if a gene pair matches ANY gene_pair in the gene list
 ###############################################################################
-def fusion_matches(g1, g2, rules):
+def fusion_matches(g1, g2, gene_pairs):
 
-    for rule in rules:
+    for gene_pair in gene_pairs:
 
         # Case 1: Single gene → match if either gene1 or gene2 contains it
-        if "::" not in rule:
-            if g1 == rule or g2 == rule:
+        if "::" not in gene_pair:
+            if g1 == gene_pair or g2 == gene_pair:
                 return True
             continue
 
-        # Case 2: Pair rule GENE1::GENE2 with possible wildcard x
-        r1, r2 = rule.split("::")
+        # Case 2: Pair gene_pair GENE1::GENE2 with possible wildcard x
+        r1, r2 = gene_pair.split("::")
 
         # wildcard handling
         r1 = ".*" if r1.lower() == "x" else r1
@@ -62,7 +64,7 @@ def fusion_matches(g1, g2, rules):
 ###############################################################################
 # 3. Process arriba TSV and write matching rows
 ###############################################################################
-def filter_fusions(gene_rules, arriba_file):
+def filter_fusions(gene_pairs, arriba_file):
 
     FilePath = os.path.abspath(arriba_file)
 
@@ -103,12 +105,12 @@ def filter_fusions(gene_rules, arriba_file):
             out.write(line)
             continue
 
-        # Otherwise, low confidence must match gene rules
+        # Otherwise, low confidence must match gene gene_pairs
         if confidence == "low":
-            if fusion_matches(gene1, gene2, gene_rules):
+            if fusion_matches(gene1, gene2, gene_pairs):
                 out.write(line)
             # also try reversed (gene2::gene1)
-            elif fusion_matches(gene2, gene1, gene_rules):
+            elif fusion_matches(gene2, gene1, gene_pairs):
                 out.write(line)
 
     infile.close()
@@ -121,7 +123,7 @@ def Main():
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--g', dest='genelist',
-                        help='Custom fusion list with gene rules',
+                        help='Custom fusion list with gene gene_pairs',
                         required=True)
 
     parser.add_argument('--f', dest='fusion',
@@ -130,8 +132,8 @@ def Main():
 
     args = parser.parse_args()
 
-    rules = load_gene_list(args.genelist)
-    filter_fusions(rules, args.fusion)
+    gene_pairs = load_gene_list(args.genelist)
+    filter_fusions(gene_pairs, args.fusion)
 
 
 if __name__ == "__main__":
