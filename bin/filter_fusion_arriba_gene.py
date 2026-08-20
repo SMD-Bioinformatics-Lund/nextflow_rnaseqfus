@@ -5,7 +5,6 @@ import argparse
 
 ###############################################################################
 # 1. Parse gene list supporting:
-#    - GENE
 #    - GENE1::GENE2
 #    - GENE1::x  (wildcard partner)
 ###############################################################################
@@ -16,9 +15,9 @@ def load_gene_list(gene_list_file):
     try:
         with open(FilePath) as f:
             for line in f:
+                line = line.strip()
                 if line.startswith("#"):
                     continue
-                line = line.strip()
                 if not line:
                     continue
 
@@ -94,9 +93,9 @@ def filter_fusions(gene_pairs, arriba_file):
 
         # Skip if no supporting reads
         if split_reads_1 + split_reads_2 + discordant_mates == 0:
-            continue
+             continue
         
-        # Only keep non-intronic
+        # # Only keep non-intronic
         if annotation1 == "intron" or annotation2 == "intron":
             continue
 
