@@ -2,7 +2,7 @@
 
 All notable changes to the nextflow_rnafusion is to be documented in this file.
 
-### ### v2.0.3
+### v2.0.3
 
 - Hotfixes the issue with the genebody coverage calculation halting due to alternate configs. Confined the analysis to primary contigs only
 
