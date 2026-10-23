@@ -2,6 +2,10 @@
 
 All notable changes to the nextflow_rnafusion is to be documented in this file.
 
+### ### v2.0.3
+
+- Hotfixes the issue with the genebody coverage calculation halting due to alternate configs. Confined the analysis to primary contigs only
+
 ### v2.0.2
 - Updated the README.md to reflect the changes in the pipeline and the profiles
 - Fixed the issue with the fusion gene list for rescuing Hematological malignancies with 0 supporting reads being included in the final output
